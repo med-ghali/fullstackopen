@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Persons from './components/Persons'
 import PersonForm from './components/PersonForm'
+import Input from './components/Input'
 
 const App = () => {
 	const [persons, setPersons] = useState([
@@ -11,22 +12,22 @@ const App = () => {
 	  ])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
+  const [personsToShow, setPersonsToShow] = useState(persons)
+  const [filter, setFilter] = useState('')
   const addPerson = (event) =>{
-	let name = newName
-	let number = newNumber
 	event.preventDefault()
 	if (!newName || !newNumber)
 		return ;
 	if (persons.some( person => person.name === newName))
 	{
 		alert(`${newName} is already added to phonebook`)
-		setNewNumber('')
-		setNewName('')
 		return
 	}
-	setNewName('')
-	setNewNumber('')
-	setPersons(persons.concat( {name: name, number: number}))
+	setPersons(persons.concat( {name: newName, number: newNumber}))
+	setNewName('') 
+	setNewNumber('') 
+	setFilter('') 
+	setPersonsToShow(persons.concat( {name: newName, number: newNumber}))
   }
   const updateName = (event) =>{
 	setNewName(event.target.value)
@@ -34,14 +35,22 @@ const App = () => {
   const updateNumber = (event) =>{
 	setNewNumber(event.target.value)
   } 
+  const updatefilter = (event) =>{
+	setFilter(event.target.value)
+	setPersonsToShow(persons.filter( 
+		p => p.name.slice(0,event.target.value.length).toLowerCase() ===
+				event.target.value.toLowerCase()
+	))
+  }
   return (
     <div>
       <h2>Phonebook</h2>
+	  <Input label="filter shown with" value={filter} updateValue={updatefilter}/>
 	  <h3>Add a new</h3>
 	  <PersonForm addPerson={addPerson} updateName={updateName} newName={newName} 
 	  	updateNumber={updateNumber} newNumber={newNumber}/>
       <h2>Numbers</h2>
-	  <Persons persons={persons}/>
+	  <Persons persons={personsToShow}/>
     </div>
   )
 }
