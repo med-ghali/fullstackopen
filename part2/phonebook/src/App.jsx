@@ -44,13 +44,16 @@ const App = () => {
   }
   return (
     <div>
-      <h2>Phonebook</h2>
-	  <Input label="filter shown with" value={filter} updateValue={updatefilter}/>
-	  <h3>Add a new</h3>
-	  <PersonForm addPerson={addPerson} updateName={updateName} newName={newName} 
-	  	updateNumber={updateNumber} newNumber={newNumber}/>
-      <h2>Numbers</h2>
-	  <Persons persons={personsToShow}/>
+    	<h2>Phonebook</h2>
+		<Input label="filter shown with" value={filter} updateValue={updatefilter}/>
+		<h3>Add a new</h3>
+		<PersonForm	
+					addPerson={addPerson} 
+	  				updateName={updateName} newName={newName} 
+	  				updateNumber={updateNumber} newNumber={newNumber}
+		/>
+    	<h2>Numbers</h2>
+		<Persons persons={personsToShow}/>
     </div>
   )
 }
