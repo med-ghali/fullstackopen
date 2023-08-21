@@ -12,18 +12,26 @@ const App = () => {
 	const [newName, setNewName] = useState('')
 	const [newNumber, setNewNumber] = useState('')
 	const [filter, setFilter] = useState('')
+	const updatePerson = (person,num) => {
+		if(!window.confirm(`${person.name} is already added to the phonebook, replace the old phone with a new one ?`))
+		return ;
+		let newPerson = { ...person, number: num};
+		personService.update(newPerson).then( (data) => {
+			setPersons( persons.map( p => p.id === newPerson.id ? data : p))
+		} )
+
+	}
 	const addPerson = (event) =>{
 		event.preventDefault()
 		if (!newName || !newNumber)
 			return ;
 		if (persons.some( person => person.name === newName))
 		{
-			alert(`${newName} is already added to phonebook`)
+			updatePerson(persons.filter(person => person.name === newName)[0], newNumber)
 			return
 		}
 		personService.create({name:newName, number:newNumber}).then( newPerson => {
 			setPersons(persons.concat( newPerson))
-			// console.log(newPerson);
 		})
 		setNewName('') 
 		setNewNumber('') 
@@ -40,6 +48,14 @@ const App = () => {
 	}
 	const hook = () => {
 		personService.getAll().then((personsData) => {setPersons(personsData)})
+	}
+	const deletePerson = (person) =>{
+		if(!window.confirm(`Delete ${person.name}`))
+			return ;
+		personService.erease(person.id)
+		.then( response => {
+			setPersons(persons.filter(p => p.id !== person.id));
+		})
 	} 
 	useEffect(hook,[])
 	const filterByName = (person) => person.name.slice(0,filter.length).toLowerCase() === 
@@ -56,7 +72,7 @@ const App = () => {
 					updateNumber={updateNumber} newNumber={newNumber}
 		/>
 			<h2>Numbers</h2>
-		<Persons persons={personsToShow}/>
+		<Persons persons={personsToShow} deletePerson={deletePerson}/>
 		</div>
 	)
 }

@@ -11,4 +11,16 @@ const create = (person) => {
 	const request = axios.post(url,person)
 	return request.then ( (response) => response.data);
 }
-export default {getAll, create};
+
+const erease = (id) => {
+	const personUrl = url + `/${id}`;
+	const request = axios.delete(personUrl)
+	return request;
+}
+
+const update = (person) => {
+	const personUrl = url + `/${person.id}`;
+	const request = axios.put(personUrl,person);
+	return request.then(response => response.data);
+}
+export default {getAll, create, erease, update};
