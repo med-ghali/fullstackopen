@@ -16,7 +16,7 @@ function App() {
 	return (
 		<>
 			<Input label="find coutries" value={filter} updateValue={udpateFilter}/>
-			<ShowCoutries coutries={filtredCoutries}/>
+			<ShowCoutries coutries={filtredCoutries} setFilter={setFilter}/>
 		</>
 	)
 }
