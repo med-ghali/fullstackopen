@@ -5,20 +5,30 @@ import personService from './services/person'
 import Persons from './components/Persons'
 import PersonForm from './components/PersonForm'
 import Input from './components/Input'
-
+import Notification from './components/Notification'
 
 const App = () => {
 	const [persons, setPersons] = useState([])
 	const [newName, setNewName] = useState('')
 	const [newNumber, setNewNumber] = useState('')
 	const [filter, setFilter] = useState('')
+	const [notif,setNotif] = useState({msg: '', isSucces:false})
 	const updatePerson = (person,num) => {
 		if(!window.confirm(`${person.name} is already added to the phonebook, replace the old phone with a new one ?`))
 		return ;
 		let newPerson = { ...person, number: num};
 		personService.update(newPerson).then( (data) => {
 			setPersons( persons.map( p => p.id === newPerson.id ? data : p))
-		} )
+			successNotif = true
+			setNotif({msg:`phone number of ${newPerson.name} replaced succesfully`,isSucces:true});
+			setTimeout( () => {setNotif({msg:'',isSucces:false})} , 5000);
+		})
+		.catch( (error) => {
+			setNotif({msg :`informations of ${newPerson.name} has already been deleted form the server`,
+				isSucces:false});
+			setPersons(persons.filter(p => p.id !== person.id));
+			setTimeout( () => {setNotif({msg:'',isSucces:false})} , 5000); 
+		})
 
 	}
 	const addPerson = (event) =>{
@@ -32,10 +42,12 @@ const App = () => {
 		}
 		personService.create({name:newName, number:newNumber}).then( newPerson => {
 			setPersons(persons.concat( newPerson))
+			setNewName('') 
+			setNewNumber('') 
+			setFilter('')
+			setNotif({msg:`added ${newName}`, isSucces:false});
+			setTimeout( () => {setNotif({msg:'',isSucces:false})} , 5000); 
 		})
-		setNewName('') 
-		setNewNumber('') 
-		setFilter('') 
 	}
 	const updateName = (event) =>{
 		setNewName(event.target.value)
@@ -64,15 +76,16 @@ const App = () => {
 	return (
 		<div>
 			<h2>Phonebook</h2>
-		<Input label="filter shown with" value={filter} updateValue={updatefilter}/>
-		<h3>Add a new</h3>
-		<PersonForm	
-					addPerson={addPerson} 
-					updateName={updateName} newName={newName} 
-					updateNumber={updateNumber} newNumber={newNumber}
-		/>
-			<h2>Numbers</h2>
-		<Persons persons={personsToShow} deletePerson={deletePerson}/>
+			<Notification notif={notif}/>
+			<Input label="filter shown with" value={filter} updateValue={updatefilter}/>
+			<h3>Add a new</h3>
+			<PersonForm	
+						addPerson={addPerson} 
+						updateName={updateName} newName={newName} 
+						updateNumber={updateNumber} newNumber={newNumber}
+			/>
+				<h2>Numbers</h2>
+			<Persons persons={personsToShow} deletePerson={deletePerson}/>
 		</div>
 	)
 }
