@@ -4,12 +4,14 @@ const cors = require('cors')
 
 const app = express()
 app.use(cors())
-const PORT = 3000
-const noteFound = "<h1>404 :Not Found</h1>"
+
+app.use(express.static('Staticdist'))
 app.use(express.json())
 morgan.token('body', function (req, res) { return JSON.stringify(req.body) })
 app.use( morgan(':method :url :status :req[content-length] - :response-time ms :body'))
 
+
+const noteFound = "<h1>404 :Not Found</h1>"
 let persons = [
     { 
       "id": 1,
@@ -82,4 +84,7 @@ app.post("/api/persons", (request,response) => {
 })
 
 
-app.listen (PORT, () => {console.log(`server listening on port ${PORT}\n`)})
+const PORT = process.env.PORT || 3000
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})
