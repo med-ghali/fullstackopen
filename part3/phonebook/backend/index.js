@@ -90,3 +90,6 @@ const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
+
+// "buildui": "shx rm -rf dist && cd ../frontend && npm run build && shx cp -r dist ../backend",
+// "deployfull": "npm run buildui && git add . && git commit -m uibuild && git push"
