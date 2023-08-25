@@ -5,7 +5,8 @@ const app = express()
 const PORT = 3000
 const noteFound = "<h1>404 :Not Found</h1>"
 app.use(express.json())
-app.use(morgan('tiny'))
+morgan.token('body', function (req, res) { return JSON.stringify(req.body) })
+app.use( morgan(':method :url :status :req[content-length] - :response-time ms :body'))
 
 let persons = [
     { 
@@ -62,7 +63,7 @@ const generateId = () => {
 }
 
 app.post("/api/persons", (request,response) => {
-	person = request.body
+	let person = request.body
 	if (!person.name || !person.number)
 	{
 		response.status(400).json({error : "name and person attribute are required"})
