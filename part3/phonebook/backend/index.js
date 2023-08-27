@@ -13,9 +13,7 @@ morgan.token('body', function (req, res) { return JSON.stringify(req.body) })
 app.use( morgan(':method :url :status :req[content-length] - :response-time ms :body'))
 app.use(express.static('dist'))
 
-
-const noteFound = "<h1>404 :Not Found</h1>"
-
+const notFound = "<h1>404 :Not Found</h1>"
 
 app.get("/api/persons", (request,response,next) => {
 	Person.find({}).then((persons) => {
@@ -30,7 +28,7 @@ app.get("/api/persons/:id",  (request,response,next) => {
 		if (person)
 			response.json(person)
 		else
-		response.status(404).send(noteFound)
+			response.status(404).send(notFound)
 	}).catch ((error) => {
 		next(error)
 	})
@@ -56,7 +54,7 @@ app.delete("/api/persons/:id",  (request,response,next) => {
 	})
 })
 
-app.post("/api/persons", (request,response,error) => {
+app.post("/api/persons", (request,response,next) => {
 	let body = request.body
 	if (!body.name || !body.number)
 	{
@@ -74,11 +72,25 @@ app.post("/api/persons", (request,response,error) => {
 	})
 })
 
+app.put ("/api/persons/:id", (request,response,next) => {
+	Person.findByIdAndUpdate(request.params.id, request.body, { new: true,runValidators: true, context: 'query' })
+	.then((result) => {
+		if (result)
+			response.json(result)
+		else
+			response.status(404).json({error: "resource already deleted"})
+	}).catch (error => {
+		next(error)
+	})
+})
+
 const errorHandler = (error, request, response, next) => {
-	console.error(error.message)
+	console.log(error);
 	if (error.name === 'CastError') {
 		return response.status(400).send({ error: 'malformatted id' })
-	}  
+	}  else if (error.name === 'ValidationError') {
+		return response.status(400).json({ error: error.message })
+	}
 	next(error)
 }
   
