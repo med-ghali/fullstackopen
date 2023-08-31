@@ -19,7 +19,6 @@ const App = () => {
 		let newPerson = { ...person, number: num};
 		personService.update(newPerson).then( (data) => {
 			setPersons( persons.map( p => p.id === newPerson.id ? data : p))
-			successNotif = true
 			setNotif({msg:`phone number of ${newPerson.name} replaced succesfully`,isSuccess:true});
 			setTimeout( () => {setNotif({msg:'',isSuccess:false})} , 5000);
 		})
@@ -45,9 +44,17 @@ const App = () => {
 			setNewName('') 
 			setNewNumber('') 
 			setFilter('')
-			setNotif({msg:`added ${newName}`, isSuccess:true});
+			setNotif({msg:`added ${newName}`, isSuccess:true})
 			setTimeout( () => {setNotif({msg:'',isSuccess:false})} , 5000); 
-		})
+		}).catch (error => {
+			setNewName('') 
+			setNewNumber('') 
+			setFilter('')
+			setNotif({msg:error.response.data.error, isSuccess:false})
+			setTimeout( () => {setNotif({msg:'',isSuccess:false})} , 5000); 
+		}) 
+
+		
 	}
 	const updateName = (event) =>{
 		setNewName(event.target.value)
