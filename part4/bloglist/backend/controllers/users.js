@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt')
 
 usersRouter.post("/", async (request,response,next) => {
 	const { username, name, password } = request.body
-	if (password.length < 3)
+	if (!passowrd || password.length < 3)
 	{
 		next({name:"ValidationError" ,message:"password to short"})
 		return 
@@ -18,7 +18,7 @@ usersRouter.post("/", async (request,response,next) => {
 })
 
 usersRouter.get("/", async (request,response) => {
-	const users = await User.find({})
+	const users = await User.find({}).populate("blogsIds")
 	response.json(users)
 })
 

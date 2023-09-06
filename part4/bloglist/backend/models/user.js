@@ -16,7 +16,7 @@ userSchema.set('toJSON', {
         delete returnedObject._id;
         delete returnedObject.__v;
         delete returnedObject.password;
-        delete returnedObject.blogsIds;
+        // delete returnedObject.blogsIds;
 	}
 })
 
