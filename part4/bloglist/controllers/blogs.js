@@ -1,9 +1,18 @@
 const blogsRouter = require('express').Router()
 const Blog = require('../models/blog')
 const User = require('../models/user')
+const SECRET = require('../utils/config').SECRET
+
+const getTokenFrom = request => {
+	const authorization = request.get('authorization')
+	if (authorization && authorization.startsWith('Bearer ')) {
+		return authorization.replace('Bearer ', '')
+	}
+	return null
+}
 
 blogsRouter.get('/', async (request, response) => {
-	const blogs = await Blog.find({}).populate('authorId')
+	const blogs = await Blog.find({}).populate('authorId', {name:1 , username:1, id: 1})
 	response.json(blogs)
 })
 
@@ -22,11 +31,15 @@ blogsRouter.delete('/:id', async (request, response) => {
 })
 
 blogsRouter.post('/', async (request, response) => {
-	const users = await User.find({})
-	const blog = {...request.body, authorId: users[0]._id}
-	const newBlog = new Blog(blog)
-	const result = await newBlog.save()
-	response.status(201).json(result)
+	const decodedToken = jwt.verify(getTokenFrom(request),SECRET)
+	if (!decodedToken)
+		return next({name : "Authentication error",message: "token invalid"})
+	const user = await User.findById(decodedToken._id)
+	const blog = new Blog({...request.body, authorId: user._id})
+	const savedBlog = await blog.save()
+	user.blogsIds = user.blogsIds.concat(savedBlog._id)
+	await user.save()
+	response.status(201).json(savedBlog)
 })
 
 blogsRouter.put('/:id', async (request, response) => {
