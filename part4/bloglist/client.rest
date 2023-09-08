@@ -1,0 +1,19 @@
+POST http://localhost:3003/api/login HTTP/1.1
+Content-type: application/json
+
+{
+	"username": "ghalix",
+	"password": "ghali.rca"
+}
+
+###
+
+POST http://localhost:3003/api/blogs HTTP/1.1
+content-Type: application/json
+authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImdoYWxpeCIsImlkIjoiNjRmNjFmNzVjYjdhMjMxOGRkOWQ3MjJmIiwiaWF0IjoxNjk0MTY4MTMwfQ.Tc7ml-7KE3oRm6IoJCLTAD_-vW-o2guREn1di1wt4tE
+
+{
+	"title": "yarn vs npm",
+	"url": "https://www.knowledgehut.com/blog/web-development/yarn-vs-npm",
+	"author": "ayoub"
+}

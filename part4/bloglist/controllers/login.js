@@ -4,12 +4,14 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const SECRET = require('../utils/config').SECRET
 
-loginRouter.post("/", async (request,response) => {
+loginRouter.post("/", async (request,response,next) => {
 	const {username, password} = request.body
 	
 	const user = await User.findOne({username})
+	if (!user)
+		return next({name : "Authentication error",message: "invalid username or password"})
 	const passwordCorrect = await bcrypt.compare(password,user.password)
-	if(!passwordCorrect || ! user)
+	if(!passwordCorrect)
 		return next({name : "Authentication error",message: "invalid username or password"})
 	const userForToken = {
 		username: user.username,

@@ -2,6 +2,7 @@ const usersRouter = require('express').Router()
 const User = require('../models/user')
 const bcrypt = require('bcrypt')
 
+
 usersRouter.post("/", async (request,response,next) => {
 	const { username, name, password } = request.body
 	if (!passowrd || password.length < 3)
