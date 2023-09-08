@@ -18,16 +18,25 @@ blogsRouter.get('/:id', async (request, response) => {
 	}
 })
 
-blogsRouter.delete('/:id', async (request, response) => {
-	await Blog.findByIdAndDelete(request.params.id)
-	response.status(204).end()
+blogsRouter.delete('/:id', async (request, response, next) => {
+	if(!request.user)
+		return next({name : "Authentication error", message: "invalid token"})
+	const user = request.user
+	const blog = await Blog.findById(request.params.id)
+	if (!blog)
+		return response.status(204).end()
+	if (user._id.toString() !== blog.authorId.toString())
+		return next({name : "Authentication error", message: "not authorized to delete this resource"})
+	await Blog.findByIdAndDelete(blog._id)
+	user.blogsIds = user.blogsIds.filter( id => id.toString() !== blog._id.toString() )
+	await user.save()
+	return response.status(204).end()
 })
 
-blogsRouter.post('/', async (request, response) => {
-	const decodedToken = jwt.verify(request.token,SECRET)
-	if (!decodedToken)
-		return next({name : "Authentication error", message: "token invalid"})
-	const user = await User.findById(decodedToken.id)
+blogsRouter.post('/', async (request, response, next) => {
+	if(!request.user)
+		return next({name : "Authentication error", message: "invalid token"})
+	const user = request.user
 	const blog = new Blog({...request.body, authorId: user._id})
 	const savedBlog = await blog.save()
 	user.blogsIds = user.blogsIds.concat(savedBlog._id)

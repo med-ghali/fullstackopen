@@ -1,3 +1,6 @@
+const jwt = require('jsonwebtoken')
+const User = require('../models/user')
+const SECRET = require('../utils/config').SECRET
 
 const errorHandler = (error, request, response, next) => {
 	if (error.name === 'CastError')
@@ -7,14 +10,25 @@ const errorHandler = (error, request, response, next) => {
 	else if (error.name === 'Authentication error')
 		return response.status(401).json({ error: error.message });
 	next(error);
-};
+}
 
-const tokenExtractor = (request,response,next) => {
+const tokenExtractor = (request) => {
 	const authorization = request.get('Authorization')
 	if (authorization && authorization.startsWith('Bearer ')) {
-		request.token = authorization.replace('Bearer ', '')
+		return authorization.replace('Bearer ', '')
 	}
+	return null
+}
+
+const userExtractor = async (request, response, next) => {
+	const token = tokenExtractor(request)
+	if (!token)
+		return next()
+	const decodedToken = jwt.verify(token,SECRET)
+	if (!decodedToken)
+		return next()
+	request.user = await User.findById(decodedToken.id)
 	next()
 }
 
-module.exports = {errorHandler,tokenExtractor}
+module.exports = {errorHandler,userExtractor}
