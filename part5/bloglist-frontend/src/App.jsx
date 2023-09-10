@@ -5,31 +5,46 @@ import BlogsForm from './components/BlogForm'
 import blogService from './services/blogs'
 import loginService from './services/login'
 import Notification from './components/Notification'
+import Togglable from './components/Togglable'
 
 const App = () => {
 	const [blogs, setBlogs] = useState([])
-	const [username, setUsername] = useState('')
-	const [password, setPassword] = useState('')
-	const [author, setAuthor] = useState('')
-	const [title, setTitle] = useState('')
-	const [url, setUrl] = useState('')
-	const [likes, setLikes] = useState('')
 	const [user, setUser] = useState(null)
-	const [notif, setNotif] = useState({msg:'',isSuccess:false})
+	const [notif, setNotif] = useState({msg:'', isSuccess:false})
 
-	const handleLogin = async (event) => {
-		event.preventDefault()
+	const handleLogin = async (credentials) => {
 		try{
-			let data = await loginService.login({username,password})
+			let data = await loginService.login(credentials)
 			window.localStorage.setItem('logged user', JSON.stringify(data))
 			setUser(data)
-			setPassword('')
-			setUsername('')
 			blogService.setToken(data.token)
 			updateNotif("user logged in", true)
-
 		} catch(err) {
 			updateNotif("wrong credentials", false)
+			throw new Error("wrong credentials")
+		}
+	}
+
+	const updateBlog = async (blog,id) => {
+		try{
+			const updatedBlog = await blogService.update(blog,id)
+			updatedBlog.user = {username: user.username}
+			setBlogs(
+				blogs.filter(b => b.id != id).concat(updatedBlog)
+			)
+			updateNotif("blog liked", true)
+		}catch (err){
+			console.log(err)
+		}
+	}
+
+	const removeBlog = async (id) => {
+		try{
+			await blogService.remove(id)
+			setBlogs(blogs.filter(b => b.id != id))
+			updateNotif("blog deleted", true)
+		}catch (err){
+			console.log(err)
 		}
 	}
 
@@ -40,15 +55,16 @@ const App = () => {
 		updateNotif("user logged out", true)
 	}
 
-	const addBlog = async (event) => {
-		event.preventDefault()
+	const addBlog = async (blog) => {
 		try{
-			const newBlog = await blogService.create({author,url,likes,title})
-			setBlogs(blogs.concat(newBlog.data))
+			const newBlog = await blogService.create(blog)
+			newBlog.user = {username: user.username}
+			setBlogs(blogs.concat(newBlog))
 			updateNotif("blog added", true)
 		} catch(err) {
-			console.log(error)
 			updateNotif("blog cant be added", false)
+			console.log(err)
+			throw new Error("blog cant be added")
 		}
 	}
 
@@ -77,29 +93,22 @@ const App = () => {
 		}
 	}, [])
 
+	const sortedBlogs = [ ...blogs].sort( (a,b) => b.likes - a.likes)
 	if (user)
 		return (
 			<>
 				<Notification notif={notif}/>
-				<Blogs username={user.username} blogs={blogs} logOut={logOut}/>
-				<BlogsForm 
-					author={author} changeAuthor={({target}) => setAuthor(target.value)}
-					likes={likes} changeLikes={({target}) => setLikes(target.value)}
-					title={title} changeTitle={({target}) => setTitle(target.value)}
-					url={url} changeUrl={({target}) => setUrl(target.value)}
-					addBlog={addBlog}
-				/>
+				<Blogs username={user.username} blogs={sortedBlogs} logOut={logOut} 
+						updateBlog={updateBlog} removeBlog={removeBlog}/> 
+				<Togglable buttonLabel="new blog">
+					<BlogsForm addBlog={addBlog} />
+				</Togglable>
 			</>
 		)
 	return (
 		<>
 			<Notification notif={notif}/>
-			<LoginForm 
-				username={username} changeUsername={({target}) => setUsername(target.value)}	
-				password={password} changePassword={({target}) => setPassword(target.value)}
-				handleLogin={handleLogin} 
-			/>
-
+			<LoginForm handleLogin={handleLogin} />
 		</>
 	)
 }

@@ -45,8 +45,9 @@ blogsRouter.post('/', async (request, response, next) => {
 })
 
 blogsRouter.put('/:id', async (request, response) => {
+	if(!request.user)
+		return next({name : "Authentication error", message: "invalid token"})
 	const newBlog = request.body
-	console.log(newBlog)
 	updatedBlog = await Blog.findByIdAndUpdate(request.params.id, newBlog, {new:true})
 	response.json(updatedBlog)
 })
