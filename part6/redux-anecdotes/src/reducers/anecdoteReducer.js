@@ -1,44 +1,42 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice } from "@reduxjs/toolkit"
+import anecdoteService from "../service/anecdotes"
 
-const anecdotesAtStart = [
-  "If it hurts, do it more often",
-  "Adding manpower to a late software project makes it later!",
-  "The first 90 percent of the code accounts for the first 90 percent of the development time...The remaining 10 percent of the code accounts for the other 90 percent of the development time.",
-  "Any fool can write code that a computer can understand. Good programmers write code that humans can understand.",
-  "Premature optimization is the root of all evil.",
-  "Debugging is twice as hard as writing the code in the first place. Therefore, if you write the code as cleverly as possible, you are, by definition, not smart enough to debug it.",
-]
+const anecdoteSlice = createSlice({
+  name: "anecdotes",
+  initialState: [],
+  reducers: {
+    voteAction(state, action) {
+      let newState = state.map((s) => (s.id === action.payload.id ? action.payload : s))
+      return newState.sort((a, b) => b.votes - a.votes)
+    },
+    appendAction(state, action) {
+      state.push(action.payload)
+    },
+    setAction(state, action) {
+      return action.payload
+    },
+  },
+})
 
-const getId = () => (100000 * Math.random()).toFixed(0)
-
-const asObject = (anecdote) => {
-  return {
-    content: anecdote,
-    id: getId(),
-    votes: 0,
+export const initializeAnecdotes = () => {
+  return async (dispatch) => {
+    const notes = await anecdoteService.getAll()
+    dispatch(setAction(notes))
   }
 }
 
-const initialState = anecdotesAtStart.map(asObject)
-
-const anecdoteSlice = createSlice({
-	name: "anecdotes",
-	initialState,
-	reducers: {
-		addAction(state,action) {
-			state.push(asObject(action.payload))
-		},
-		voteAction(state,action) {
-			let id = action.payload
-			let toChange = state.find((s) => s.id === id)
-			let changed = {
-			  ...toChange,
-			  votes: toChange.votes + 1,
-			}
-			let newState = state.map((s) => (s.id === id ? changed : s))
-			return newState.sort((a, b) => b.votes - a.votes)
-		},
+export const addAnecdote = (content) => {
+	return async (dispatch) => {
+		const anecdote = await anecdoteService.createNew(content)
+		dispatch(appendAction(anecdote))
 	}
-})
-export const {addAction,voteAction} = anecdoteSlice.actions
+}
+
+export const voteAnecdote = (anecdote) => {
+	return async (dispatch) => {
+		const newAnecdote = await anecdoteService.modify( { ...anecdote, votes: anecdote.votes+1})
+		dispatch(voteAction(newAnecdote))
+	}
+}
+export const { voteAction, appendAction, setAction } = anecdoteSlice.actions
 export default anecdoteSlice.reducer
